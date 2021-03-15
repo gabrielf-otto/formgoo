@@ -1,0 +1,195 @@
+import FakeUserRepository from '@modules/users/repositories/fakes/FakeUserRepository';
+import FakeFormRepository from '../repositories/fakes/FakeFormRepository';
+import FakeResolutionRepository from '../repositories/fakes/FakeResolutionRepository';
+import CreateResolutionService from './CreateResolutionService';
+
+import Resolution from '../infra/typeorm/entities/Resolution';
+import User from '@modules/users/infra/typeorm/entities/User';
+import Form from '../infra/typeorm/entities/Form';
+
+import AppError from '@shared/errors/AppError';
+
+
+let formRepository: FakeFormRepository;
+let resolutionRepository: FakeResolutionRepository;
+let createResolution: CreateResolutionService;
+
+let userRepository: FakeUserRepository;
+
+let user: User;
+let form: Form;
+
+
+describe('CreateResolution', () => 
+{
+   beforeEach(async () => 
+   {
+      userRepository = new FakeUserRepository();
+      formRepository = new FakeFormRepository();
+      resolutionRepository = new FakeResolutionRepository();
+
+      createResolution = new CreateResolutionService(
+         userRepository,
+         formRepository,
+         resolutionRepository
+      );
+
+      user = await userRepository.store({
+         email: 'gabriel@mail.com',
+         password: 'pass'
+      });
+
+      form = await formRepository.store({
+         title: 'Formulário',
+         user_id: user.id,
+
+         questions: [
+            {
+               type: '',
+               content: '',
+               position: 1,
+               required: true,
+               options: [],
+               form_id: '1'
+            }
+         ]
+      });
+   });
+
+   it('should not find the user', async () => 
+   {
+      await expect(createResolution.run({
+         delivered: false,
+         answers: [
+            {
+               content: '',
+               question_id: '1',
+               resolution_id: '1'
+            }
+         ],
+         form_id: form.id,
+         user_id: '#'
+      }))
+      .rejects.toBeInstanceOf(AppError);
+   });
+
+   it('should not find the form', async () => 
+   {
+      await expect(createResolution.run({
+         delivered: false,
+         answers: [
+            {
+               content: '',
+               question_id: '1',
+               resolution_id: '1'
+            }
+         ],
+         form_id: '#',
+         user_id: user.id
+      }))
+      .rejects.toBeInstanceOf(AppError);
+   });
+
+   it('should create a resolution', async () => 
+   {
+      const pedro = await userRepository.store({
+         email: 'pedro@mail.com',
+         password: 'pass'
+      });
+
+      pedro.forms = [form];
+
+      const resolution = await createResolution.run({
+         delivered: false,
+         answers: [
+            {
+               content: '',
+               question_id: '1',
+               resolution_id: '1'
+            }
+         ],
+         form_id: form.id,
+         user_id: pedro.id
+      });
+
+      expect(resolution).toBeInstanceOf(Resolution);
+   });
+
+   it('should not allow an user to create more than one resolution to the same form', async () => 
+   {
+      const pedro = await userRepository.store({
+         email: 'pedro@mail.com',
+         password: 'pass'
+      });
+
+      pedro.forms = [form];
+
+      await createResolution.run({
+         delivered: false,
+         answers: [
+            {
+               content: '',
+               question_id: '1',
+               resolution_id: '1'
+            }
+         ],
+         form_id: form.id,
+         user_id: pedro.id
+      });
+
+      await expect(createResolution.run({
+         delivered: false,
+         answers: [
+            {
+               content: '',
+               question_id: '1',
+               resolution_id: '1'
+            }
+         ],
+         form_id: form.id,
+         user_id: pedro.id
+      }))
+      .rejects.toBeInstanceOf(AppError);
+   });
+
+   it('should not allow an user to create a resolution to his own forms', async () => 
+   {
+      await expect(createResolution.run({
+         delivered: false,
+         answers: [
+            {
+               content: '',
+               question_id: '1',
+               resolution_id: '1'
+            }
+         ],
+         form_id: form.id,
+         user_id: user.id
+      }))
+      .rejects.toBeInstanceOf(AppError);
+   });
+
+   it('should not allow to create a resolution with non-received form', async () => 
+   {
+      const pedro = await userRepository.store({
+         email: 'pedro@mail.com',
+         password: 'pass'
+      });
+
+      pedro.forms = [];
+
+      await expect(createResolution.run({
+         delivered: false,
+         answers: [
+            {
+               content: '',
+               question_id: '1',
+               resolution_id: '1'
+            }
+         ],
+         form_id: form.id,
+         user_id: pedro.id
+      }))
+      .rejects.toBeInstanceOf(AppError);
+   });
+});
