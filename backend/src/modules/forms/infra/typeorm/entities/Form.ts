@@ -6,7 +6,6 @@ import {
    UpdateDateColumn,
    ManyToOne,
    JoinColumn,
-   ManyToMany,
    OneToMany
 } from 'typeorm';
 
@@ -42,9 +41,6 @@ class Form
    @ManyToOne(() => User)
    @JoinColumn({ name: 'user_id' })
    user: User;
-
-   @ManyToMany(() => User, user => user.forms)
-   users: User[];
 }
 
 

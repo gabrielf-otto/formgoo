@@ -29,7 +29,7 @@ class DeleteFormService
       if (!user) 
       {
          throw new AppError(
-            'User not found'
+            'Invalid JWT token'
          );
       }
 
@@ -49,7 +49,7 @@ class DeleteFormService
          );
       }
 
-      await this.formRepository.delete(form_id);
+      await this.formRepository.deleteById(form_id);
    }
 }
 

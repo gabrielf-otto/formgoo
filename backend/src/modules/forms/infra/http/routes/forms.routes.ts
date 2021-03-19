@@ -1,11 +1,9 @@
 import { Router } from 'express';
 
+
 import FormController from '../controllers/FormController';
-import MyFormController from '../controllers/MyFormController';
-
 import SendFormController from '../controllers/SendFormController';
-import SentFormController from '../controllers/SentFormController';
-
+import ViewFormController from '../controllers/ViewFormController';
 import ResolutionController from '../controllers/ResolutionController';
 
 import auth from '@modules/users/infra/middlewares/auth';
@@ -15,19 +13,18 @@ const formsRouter = Router();
 
 
 formsRouter.post('/forms', auth, FormController.store);
-formsRouter.put('/forms/:id', auth, FormController.update);
-formsRouter.get('/forms/me', auth, MyFormController.index);
-formsRouter.get('/forms/me/:id', auth, FormController.show);
-formsRouter.delete('/forms/:id', auth, FormController.delete);
+formsRouter.put('/forms/:form_id', auth, FormController.update);
+formsRouter.get('/forms', auth, FormController.index);
+formsRouter.get('/forms/:form_id', auth, FormController.show);
+formsRouter.delete('/forms/:form_id', auth, FormController.delete);
 
-formsRouter.post('/forms/:id/send', auth, SendFormController.store);
-formsRouter.get('/forms/sent/me', auth, SentFormController.index);
-formsRouter.get('/forms/sent/me/:id', auth, SentFormController.show);
+formsRouter.post('/forms/send/:form_id', auth, SendFormController.store);
+formsRouter.get('forms/view/:form_id', ViewFormController.show);
 
-formsRouter.post('/forms/:id/resolution', auth, ResolutionController.store);
-formsRouter.get('/forms/:id/resolution', auth, ResolutionController.show);
-formsRouter.put('/forms/:id/resolution', auth, ResolutionController.update);
-formsRouter.delete('/forms/:id/resolution', auth, ResolutionController.delete);
+formsRouter.post('/forms/:form_id/resolutions', ResolutionController.store);
+formsRouter.get('/forms/:form_id/resolutions', auth, ResolutionController.index);
+formsRouter.get('/forms/resolutions/:resolution_id', auth, ResolutionController.show);
+formsRouter.delete('/forms/resolutions/:resolution_id', auth, ResolutionController.delete);
 
 
 export default formsRouter;

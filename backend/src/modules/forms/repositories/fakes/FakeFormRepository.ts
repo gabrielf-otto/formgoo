@@ -55,11 +55,11 @@ class FakeFormRepository implements IFormRepository {
       );
    }
 
-   async findAllMyForms(user_id: string): Promise<Form[]> {
+   async findMyForms(user_id: string): Promise<Form[]> {
       return this.forms.filter(form => form.user_id === user_id);
    }
 
-   async delete(form_id: string): Promise<void> {
+   async deleteById(form_id: string): Promise<void> {
       const index = this.forms.findIndex(form => form.id === form_id);
       this.forms.splice(index, 1);
    }

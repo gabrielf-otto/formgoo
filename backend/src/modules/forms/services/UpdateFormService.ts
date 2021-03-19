@@ -24,10 +24,7 @@ class UpdateFormService
       private userRepository: IUserRepository,
 
       @inject('FormRepository')
-      private formRepository: IFormRepository,
-
-      @inject('ResolutionRepository')
-      private resolutionRepository: IResolutionRepository
+      private formRepository: IFormRepository
    )
    {}
 
@@ -37,7 +34,7 @@ class UpdateFormService
       if (!user) 
       {
          throw new AppError(
-            'User not found'
+            'Invalid JWT token'
          );
       }
 
@@ -53,15 +50,6 @@ class UpdateFormService
       {
          throw new AppError(
             'Permission denied',
-            401
-         );
-      }
-
-      const resolution = await this.resolutionRepository.findDeliveredFrom(form_id);
-      if (resolution) 
-      {
-         throw new AppError(
-            'There is already one resolution delivered for this form',
             401
          );
       }

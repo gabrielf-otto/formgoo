@@ -9,10 +9,9 @@ import AppError from '@shared/errors/AppError';
 
 
 interface IRequest {
-   delivered: boolean;
    answers: IAnswerDTO[];
+   from: string;
    form_id: string;
-   user_id: string;
 }
 
 @injectable()
@@ -30,16 +29,8 @@ class CreateResolutionService
    )
    {}
 
-   async run({ delivered, answers, form_id, user_id }: IRequest) 
+   async run({ answers, from, form_id }: IRequest) 
    {
-      const user = await this.userRepository.findById(user_id);
-      if (!user) 
-      {
-         throw new AppError(
-            'User not found'
-         );
-      }
-
       const form = await this.formRepository.findById(form_id);
       if (!form) 
       {
@@ -48,42 +39,18 @@ class CreateResolutionService
          );
       }
 
-      if (form.user_id === user_id) 
+      const user = await this.userRepository.findById(form.user_id);
+      if (user?.email === from) 
       {
          throw new AppError(
             'You cannot create resolutions to your own forms'
          );
       }
 
-      // load user received forms
-      const forms = await user.forms;
-
-      const userForm = forms.find(form => form.id === form_id);
-      if (!userForm) 
-      {
-         throw new AppError(
-            'You didn\'t receive this form',
-            401
-         );
-      }
-
-      const resolution = await this.resolutionRepository.findMyResolution({
-         user_id: user.id,
-         form_id: form.id
-      });
-
-      if (resolution) 
-      {
-         throw new AppError(
-            'Already exists a resolution for this form'
-         );
-      }
-
       return await this.resolutionRepository.store({
-         delivered,
          answers,
-         form_id,
-         user_id
+         from,
+         form_id
       });
    }
 }

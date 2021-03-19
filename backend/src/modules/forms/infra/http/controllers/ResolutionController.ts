@@ -2,28 +2,41 @@ import { Request, Response } from 'express';
 import { container } from 'tsyringe';
 
 import CreateResolutionService from '@modules/forms/services/CreateResolutionService';
+import ListResolutionsService from '@modules/forms/services/ListResolutionsService';
 import ShowResolutionService from '@modules/forms/services/ShowResolutionService';
-import UpdateResolutionService from '@modules/forms/services/UpdateResolutionService';
+import DeleteResolutionService from '@modules/forms/services/DeleteResolutionService';
 
 
 class ResolutionController {
+   static async index(request: Request, response: Response) 
+   {
+      const { form_id } = request.params;
+      const user_id = request.user.id;
+
+      const listResolutions = container.resolve(ListResolutionsService);
+      const resolutions = await listResolutions.run({
+         form_id,
+         user_id
+      });
+
+      return response.json(resolutions);
+   }
+
    static async store(request: Request, response: Response) 
    {
       const {
-         delivered,
-         answers
+         answers,
+         from
       } = request.body;
 
-      const form_id = request.params.id;
-      const user_id = request.user.id;
+      const { form_id } = request.params;
 
       const createResolution = container.resolve(CreateResolutionService);
       const resolution = await createResolution.run(
       {
-         delivered,
          answers,
-         form_id,
-         user_id
+         from,
+         form_id
       });
 
       return response.json(resolution);
@@ -31,43 +44,29 @@ class ResolutionController {
 
    static async show(request: Request, response: Response) 
    {
+      const { resolution_id } = request.params;
       const user_id = request.user.id;
-      const form_id = request.params.id;
 
       const showResolution = container.resolve(ShowResolutionService);
       const resolution = await showResolution.run(
       {
-         user_id,
-         form_id
+         resolution_id,
+         user_id
       });
 
       return response.json(resolution);
    }
 
-   static async update(request: Request, response: Response) 
+   static async delete(request: Request, response: Response) 
    {
-      const { 
-         delivered, 
-         answers 
-      } = request.body;
-
-      const form_id = request.params.id;
+      const { resolution_id } = request.params;
       const user_id = request.user.id;
 
-      const updateResolution = container.resolve(UpdateResolutionService);
-      const resolution = await updateResolution.run(
-      {
-         delivered,
-         answers,
-         user_id,
-         form_id
+      const deleteResolution = container.resolve(DeleteResolutionService);
+      await deleteResolution.run({
+         resolution_id,
+         user_id
       });
-
-      return response.json(resolution);
-   }
-
-   static async delete(request: Request, response: Response) {
-
    }
 }
 

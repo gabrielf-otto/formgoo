@@ -16,16 +16,11 @@ export class CreateResolutions1615479886399 implements MigrationInterface {
 						default: 'uuid_generate_v4()'
 					},
 					{
-						name: 'delivered',
-						type: 'boolean',
-						default: false
+						name: 'from',
+						type: 'varchar'
 					},
 					{
 						name: 'form_id',
-						type: 'uuid'
-					},
-					{
-						name: 'user_id',
 						type: 'uuid'
 					},
 					{
@@ -47,14 +42,6 @@ export class CreateResolutions1615479886399 implements MigrationInterface {
 						columnNames: ['form_id'],
 						referencedColumnNames: ['id'],
 						referencedTableName: 'forms',
-						onUpdate: 'CASCADE',
-						onDelete: 'CASCADE'
-					},
-					{
-						name: 'user_resolution',
-						columnNames: ['user_id'],
-						referencedColumnNames: ['id'],
-						referencedTableName: 'users',
 						onUpdate: 'CASCADE',
 						onDelete: 'CASCADE'
 					}

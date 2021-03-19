@@ -1,6 +1,5 @@
 import { injectable, inject } from 'tsyringe';
 
-import IFormRepository from '../repositories/IFormRepository';
 import IUserRepository from '@modules/users/repositories/IUserRepository';
 import IResolutionRepository from '@modules/forms/repositories/IResolutionRepository';
 import Resolution from '../infra/typeorm/entities/Resolution';
@@ -9,8 +8,8 @@ import AppError from '@shared/errors/AppError';
 
 
 interface IRequest {
+   resolution_id: string;
    user_id: string;
-   form_id: string;
 }
 
 @injectable()
@@ -20,36 +19,30 @@ class ShowResolutionService
       @inject('UserRepository')
       private userRepository: IUserRepository,
 
-      @inject('FormRepository')
-      private formRepository: IFormRepository,
-
       @inject('ResolutionRepository')
       private resolutionRepository: IResolutionRepository
    )
    {}
 
-   async run({ user_id, form_id }: IRequest): Promise<Resolution | undefined> 
+   async run({ resolution_id, user_id }: IRequest): Promise<Resolution | undefined> 
    {
       const user = await this.userRepository.findById(user_id);
       if (!user) 
       {
          throw new AppError(
-            'User not found'
+            'Invalid JWT token'
          );
       }
 
-      const form = await this.formRepository.findById(form_id);
-      if (!form) 
+      const resolution = await this.resolutionRepository.findById(resolution_id);
+      if (!resolution) 
       {
          throw new AppError(
-            'Form not found'
+            'Resolution not found'
          );
       }
 
-      return await this.resolutionRepository.findMyResolution({ 
-         user_id, 
-         form_id 
-      });
+      return resolution;
    }
 }
 

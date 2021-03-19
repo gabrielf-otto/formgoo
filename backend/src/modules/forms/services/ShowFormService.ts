@@ -1,8 +1,8 @@
 import { injectable, inject } from 'tsyringe';
 
+import Form from '../infra/typeorm/entities/Form';
 import IFormRepository from '../repositories/IFormRepository';
 import IUserRepository from '@modules/users/repositories/IUserRepository';
-import Form from '../infra/typeorm/entities/Form';
 
 import AppError from '@shared/errors/AppError';
 
@@ -13,7 +13,7 @@ interface IRequest {
 }
 
 @injectable()
-class ShowResolutionService
+class ShowFormService
 {
    constructor(
       @inject('UserRepository')
@@ -30,13 +30,21 @@ class ShowResolutionService
       if (!user) 
       {
          throw new AppError(
-            'User not found'
+            'Invalid JWT token'
          );
       }
 
-      return await this.formRepository.findMyForm({ form_id, user_id });
+      const form = await this.formRepository.findById(form_id);
+      if (!form) 
+      {
+         throw new AppError(
+            'Form not found'
+         );
+      }
+
+      return form;
    }
 }
 
 
-export default ShowResolutionService;
+export default ShowFormService;

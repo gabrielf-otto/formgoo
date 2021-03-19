@@ -2,6 +2,7 @@ import { injectable, inject } from 'tsyringe';
 
 import IUserRepository from '@modules/users/repositories/IUserRepository';
 import IResolutionRepository from '../repositories/IResolutionRepository';
+import IFormRepository from '../repositories/IFormRepository';
 
 import AppError from '@shared/errors/AppError';
 
@@ -19,7 +20,10 @@ class DeleteResolutionService
       private userRepository: IUserRepository,
 
       @inject('ResolutionRepository')
-      private resolutionRepository: IResolutionRepository
+      private resolutionRepository: IResolutionRepository,
+
+      @inject('FormRepository')
+      private formRepository: IFormRepository
    )
    {}
 
@@ -29,7 +33,7 @@ class DeleteResolutionService
       if (!user) 
       {
          throw new AppError(
-            'User not found'
+            'Invalid JWT token'
          );
       }
 
@@ -41,7 +45,8 @@ class DeleteResolutionService
          );
       }
 
-      if (resolution.user_id !== user_id)
+      const form = await this.formRepository.findById(resolution.form_id);
+      if (form?.user_id !== user_id)
       {
          throw new AppError(
             'Permission denied',
@@ -49,7 +54,7 @@ class DeleteResolutionService
          );
       }
 
-      await this.resolutionRepository.delete(resolution_id);
+      await this.resolutionRepository.deleteById(resolution_id);
    }
 }
 

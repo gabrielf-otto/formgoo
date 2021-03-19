@@ -12,7 +12,7 @@ interface IRequest {
 }
 
 @injectable()
-class ListMyFormsService
+class ListFormsService
 {
    constructor(
       @inject('UserRepository')
@@ -29,13 +29,13 @@ class ListMyFormsService
       if (!user) 
       {
          throw new AppError(
-            'User not found'
+            'Invalid JWT token'
          );
       }
 
-      return await this.formRepository.findAllMyForms(user_id);
+      return await this.formRepository.findMyForms(user_id);
    }
 }
 
 
-export default ListMyFormsService;
+export default ListFormsService;

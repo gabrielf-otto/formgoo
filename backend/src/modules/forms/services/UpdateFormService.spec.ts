@@ -29,8 +29,7 @@ describe('CreateResolution', () =>
 
       updateForm = new UpdateFormService(
          userRepository,
-         formRepository,
-         resolutionRepository
+         formRepository
       );
 
       user = await userRepository.store({
@@ -136,40 +135,5 @@ describe('CreateResolution', () =>
       });
 
       expect(updated.questions.length).toBeGreaterThan(1);
-   });
-
-   it('should not allow to update a form \'cause already exists a resolution delivered for it', async () => 
-   {
-      await resolutionRepository.store({
-         delivered: true,
-         answers: [
-            {
-               content: '',
-               question_id: '1',
-               resolution_id: '1'
-            }
-         ],
-         form_id: form.id,
-         user_id: user.id
-      });
-
-      await expect(updateForm.run({
-         title: 'Formulário',
-         description: '',
-         questions: [
-            ...form.questions,
-            {
-               type: '',
-               content: '',
-               position: 2,
-               required: false,
-               form_id: '1'
-            }
-         ],
-
-         form_id: form.id,
-         user_id: user.id
-      }))
-      .rejects.toBeInstanceOf(AppError);
    });
 });

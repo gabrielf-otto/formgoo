@@ -21,14 +21,11 @@ class Resolution
    @PrimaryGeneratedColumn('uuid')
    id: string;
 
-   @Column({ default: false })
-   delivered: boolean;
+   @Column()
+   from: string;
 
    @Column('uuid')
    form_id: string;
-
-   @Column('uuid')
-   user_id: string;
 
    @CreateDateColumn()
    created_at: Date;

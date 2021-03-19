@@ -9,7 +9,7 @@ export default interface IFormRepository {
    merge: (form: Form, data: IMergeFormDTO) => Promise<Form>;
    save: (form: Form) => Promise<Form>;
    findById: (id: string) => Promise<Form | undefined>;
-   findMyForm: (data: IFindMyFormDTO) => Promise<Form | undefined>;
-   findAllMyForms: (user_id: string) => Promise<Form[]>;
-   delete: (form_id: string) => Promise<void>;
+   findMyForm: (data: IFindMyFormDTO ) => Promise<Form | undefined>;
+   findMyForms: (user_id: string) => Promise<Form[]>;
+   deleteById: (form_id: string) => Promise<void>;
 }

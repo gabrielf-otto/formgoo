@@ -5,13 +5,15 @@ import {
    CreateDateColumn, 
    UpdateDateColumn,
    ManyToOne,
-   JoinColumn
+   JoinColumn,
+   Unique
 } from 'typeorm';
 
 import Form from './Form';
 
 
 @Entity('questions')
+@Unique(['form_id', 'position'])
 class Question 
 {
    @PrimaryGeneratedColumn('uuid')

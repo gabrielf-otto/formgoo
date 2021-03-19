@@ -5,8 +5,7 @@ import {
    CreateDateColumn, 
    UpdateDateColumn,
    ManyToOne,
-   JoinColumn,
-   Unique
+   JoinColumn
 } from 'typeorm';
 
 import Question from './Question';
@@ -14,7 +13,6 @@ import Resolution from './Resolution';
 
 
 @Entity('answers')
-@Unique(['question_id', 'resolution_id'])
 class Answer 
 {
    @PrimaryGeneratedColumn('uuid')

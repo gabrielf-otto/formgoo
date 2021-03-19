@@ -44,15 +44,15 @@ class FormRepository implements IFormRepository {
    }
 
    async findMyForm({ form_id, user_id }: IFindMyFormDTO): Promise<Form | undefined> {
-      return this.repository.findOne({ where: { id: form_id, user_id } });
+      return await this.repository.findOne({ where: { form_id, user_id } });
    }
 
-   async findAllMyForms(user_id: string): Promise<Form[]> {
+   async findMyForms(user_id: string): Promise<Form[]> {
       return await this.repository.find({ where: { user_id } });
    }
 
-   async delete(form_id: string): Promise<void> {
-      await this.repository.delete(form_id);
+   async deleteById(id: string): Promise<void> {
+      await this.repository.delete(id);
    }
 }
 

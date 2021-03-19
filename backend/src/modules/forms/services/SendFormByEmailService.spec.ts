@@ -5,11 +5,13 @@ import User from '@modules/users/infra/typeorm/entities/User';
 import Form from '../infra/typeorm/entities/Form';
 
 import AppError from '@shared/errors/AppError';
-import SendFormService from './SendFormService';
+import SendFormService from './SendFormByEmailService';
+import FakeMailProvider from '@shared/container/providers/MailProvider/fakes/FakeMailProvider';
 
 
 let userRepository: FakeUserRepository;
 let formRepository: FakeFormRepository;
+let mailProvider: FakeMailProvider;
 
 let sendForm: SendFormService;
 
@@ -23,18 +25,18 @@ describe('CreateResolution', () =>
    {
       userRepository = new FakeUserRepository();
       formRepository = new FakeFormRepository();
+      mailProvider = new FakeMailProvider();
 
       sendForm = new SendFormService(
          userRepository,
-         formRepository
+         formRepository,
+         mailProvider
       );
 
       user = await userRepository.store({
          email: 'gabriel@mail.com',
          password: 'pass'
       });
-
-      user.forms = [];
 
       form = await formRepository.store({
          title: 'Formulário',
@@ -54,7 +56,7 @@ describe('CreateResolution', () =>
    it('should not find the user', async () => 
    {
       await expect(sendForm.run({
-         email: 'pedro@mail.com',
+         to: 'pedro@mail.com',
          form_id: form.id,
          user_id: '#'
       }))
@@ -64,7 +66,7 @@ describe('CreateResolution', () =>
    it('should not find the form', async () => 
    {
      await expect(sendForm.run({
-         email: 'pedro@mail.com',
+         to: 'pedro@mail.com',
          form_id: '#',
          user_id: user.id
       }))
@@ -74,17 +76,7 @@ describe('CreateResolution', () =>
    it('should not send a form to yourself', async () => 
    {     
       await expect(sendForm.run({
-         email: 'gabriel@mail.com',
-         form_id: form.id,
-         user_id: user.id
-      }))
-      .rejects.toBeInstanceOf(AppError);
-   });
-
-   it('should not find a invited user', async () => 
-   {
-      await expect(sendForm.run({
-         email: 'pedro@mail.com',
+         to: 'gabriel@mail.com',
          form_id: form.id,
          user_id: user.id
       }))
@@ -93,17 +85,12 @@ describe('CreateResolution', () =>
 
    it('should send a form to an user', async () => 
    {
-      const pedro = await userRepository.store({
-         email: 'pedro@mail.com',
-         password: 'pass'
-      });
-
-      await sendForm.run({
-         email: 'pedro@mail.com',
+      const sent = await sendForm.run({
+         to: 'pedro@mail.com',
          form_id: '1',
          user_id: user.id
       });
 
-      expect(pedro.forms.length).toBe(1);
+      expect(sent).toBe(true);
    });
 });

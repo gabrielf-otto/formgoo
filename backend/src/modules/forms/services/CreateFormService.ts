@@ -32,7 +32,7 @@ class CreateFormService
       if (!user) 
       {
          throw new AppError(
-            'User not found'
+            'Invalid JWT token'
          );
       }
 
