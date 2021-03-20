@@ -11,7 +11,7 @@ class TokenRepository implements ITokenRepository {
       this.repository = getRepository(Token);
    }
 
-   async generate(user_id: string): Promise<Token> {
+   async generateTo(user_id: string): Promise<Token> {
       const token = await this.repository.create({ 
          user_id 
       });
@@ -24,6 +24,14 @@ class TokenRepository implements ITokenRepository {
       return await this.repository.findOne({ 
          where: { value } 
       });
+   }
+
+   async findByUserId(user_id: string): Promise<Token | undefined> {
+      return await this.repository.findOne({ where: { user_id } });
+   }
+
+   async deleteById(id: string): Promise<void> {
+      await this.repository.delete(id);
    }
 }
 
