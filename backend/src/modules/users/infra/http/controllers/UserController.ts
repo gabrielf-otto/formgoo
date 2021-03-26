@@ -13,12 +13,14 @@ class UserController {
    static async store(request: Request, response: Response) 
    {
       const { 
+         name,
          email, 
          password 
       } = request.body;
 
       const createUser = container.resolve(CreateUserService);
       const user = await createUser.run({ 
+         name,
          email, 
          password 
       });

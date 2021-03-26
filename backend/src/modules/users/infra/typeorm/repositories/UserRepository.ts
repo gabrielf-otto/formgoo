@@ -5,6 +5,7 @@ import IUserRepository from '@modules/users/repositories/IUserRepository';
 
 
 interface IRequest {
+   name: string;
    email: string;
    password: string;
 }
@@ -16,8 +17,12 @@ class UserRepository implements IUserRepository {
       this.repository = getRepository(User);
    }
 
-   async create({ email, password }: IRequest): Promise<User> {
-      const user = await this.repository.create({ email, password });
+   async store({ name, email, password }: IRequest): Promise<User> {
+      const user = await this.repository.create({ 
+         name, 
+         email, 
+         password 
+      });
 
       await this.repository.save(user);
       return user;

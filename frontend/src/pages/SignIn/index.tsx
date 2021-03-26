@@ -1,20 +1,43 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { 
-   Container, 
    Box, 
    Grid, 
-   Paper, 
-   Card, 
-   TextField, 
-   FormControlLabel, 
-   Checkbox, 
+   TextField,  
    Button, 
    Link, 
    Typography
 } from '@material-ui/core';
 
 
+import { useHistory } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { useAuth } from '../../hooks/auth';
+
+
+
+const schema = '';
+
+
 const SignIn: React.FC = () => {
+   const { register, handleSubmit, errors } = useForm({
+      // resolver: yupResolver(schema)
+   });
+
+   const { signIn } = useAuth();
+   const history = useHistory();
+
+
+   const signInRequest = useCallback(async (data) => {
+      try {
+         console.log(data);
+         await signIn(data);
+         history.push('/');
+      }
+      catch (err) {
+         console.log(err);
+      }
+   },
+   [signIn]);
 
 
    return (
@@ -22,57 +45,50 @@ const SignIn: React.FC = () => {
          <Grid container>
             <Grid item xs={12}>
                <Box maxWidth={400} mx="auto">
-                  <Paper>
-                     <Box p={2}>
-                        <Typography variant="h4">Sign in</Typography>
+                  <Box p={2}>
+                  <Typography component="h1" variant="h5" align="center">
+                     Login
+                  </Typography>
 
-                        <form autoComplete="off">
-                           <TextField
-                              variant="outlined"
-                              margin="normal"
-                              required
-                              fullWidth
-                              id="email"
-                              label="Email"
-                              name="email"
-                              autoComplete="email"
-                              autoFocus
-                           />
-                           <TextField
-                              variant="outlined"
-                              margin="normal"
-                              required
-                              fullWidth
-                              name="password"
-                              label="Senha"
-                              type="password"
-                              id="password"
-                              autoComplete="password"
-                           />
-                           <Grid xs={12}>
-                              <Link href="#" variant="body2">
-                                 Esqueceu a senha?
-                              </Link>
-                           </Grid>
-                           <Button
-                              type="submit"
-                              fullWidth
-                              variant="contained"
-                              color="primary"
-                              style={{margin: '30px 20px 30px 20px'}}
-                           >
-                              Entrar
-                           </Button>
-                           <Grid container>
-                              <Grid item>
-                                 <Link href="#" variant="body2">
-                                    {"Não tem uma conta? Registre-se"}
-                                 </Link>
-                              </Grid>
-                           </Grid>
-                        </form>
-                     </Box>
-                  </Paper>
+                     <form onSubmit={handleSubmit(signInRequest)}>
+                        <TextField
+                           inputRef={register}
+                           variant="outlined"
+                           margin="normal"
+                           fullWidth
+                           id="email"
+                           label="Email"
+                           name="email"
+                           autoComplete="off"
+                           autoFocus
+                        />
+                        <TextField
+                           inputRef={register}
+                           variant="outlined"
+                           margin="normal"
+                           fullWidth
+                           name="password"
+                           label="Senha"
+                           type="password"
+                           id="password"
+                           autoComplete="off"
+                        />
+                        <Grid xs={12}>
+                           <Link href="#" variant="body2">
+                              Esqueceu a senha?
+                           </Link>
+                        </Grid>
+                        <Button
+                           type="submit"
+                           fullWidth
+                           variant="contained"
+                           color="primary"
+                           style={{margin: '30px 0'}}
+                        >
+                           Entrar
+                        </Button>
+                     </form>
+                  </Box>
                </Box>
             </Grid>
          </Grid>

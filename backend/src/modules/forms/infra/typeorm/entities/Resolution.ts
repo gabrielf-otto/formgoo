@@ -34,7 +34,10 @@ class Resolution
    updated_at: Date;
 
 
-   @OneToMany(() => Answer, answer => answer.resolution, { cascade: true, eager: true })
+   @OneToMany(() => Answer, answer => answer.resolution, { 
+      cascade: true, 
+      eager: true 
+   })
    answers: Answer[];
 
    @ManyToOne(() => Form)

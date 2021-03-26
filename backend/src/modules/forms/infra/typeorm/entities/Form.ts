@@ -35,7 +35,10 @@ class Form
    updated_at: Date;
 
 
-   @OneToMany(() => Question, question => question.form, { cascade: true, eager: true })
+   @OneToMany(() => Question, question => question.form, { 
+      cascade: true, 
+      eager: true 
+   })
    questions: Question[];
 
    @ManyToOne(() => User)

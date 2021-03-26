@@ -2,13 +2,25 @@ import { createGlobalStyle } from 'styled-components';
 
 
 export default createGlobalStyle`
-   body {
-      margin: 0;
-      padding: 0;
-      overflow-x: hidden;
+   ::-webkit-scrollbar-track {
+      background-color: #F4F4F4;
+   }
+   ::-webkit-scrollbar {
+      width: 6px;
+      background: #F4F4F4;
+   }
+   ::-webkit-scrollbar-thumb {
+      background: #dad7d7;
+      border-radius: 3px;
    }
 
-   * {
-      box-sizing: border-box;
+   a {
+      text-decoration: none;
+      color: inherit;
    }
+
+   input.MuiFilledInput-input {
+      padding: 15px;
+   }
+
 `;

@@ -5,6 +5,7 @@ import IUserRepository from '@modules/users/repositories/IUserRepository';
 
 
 interface IRequest {
+   name: string;
    email: string;
    password: string;
 }
@@ -12,11 +13,12 @@ interface IRequest {
 class FakeUserRepository implements IUserRepository {
    private users: User[] = [];
 
-   public async store({ email, password }: IRequest): Promise<User> {
+   public async store({ name, email, password }: IRequest): Promise<User> {
       const user = new User();
 
       Object.assign(user, {
          id: uuid(),
+         name,
          email,
          password
       });

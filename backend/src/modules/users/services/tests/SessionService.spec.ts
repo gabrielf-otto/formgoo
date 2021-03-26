@@ -1,14 +1,14 @@
-import FakeUserRepository from '../repositories/fakes/FakeUserRepository';
-import FakeHashProvider from '../providers/HashProvider/fakes/FakeHashProvider';
-import FakeTokenProvider from '../providers/TokenProvider/fakes/FakeTokenProvider';
+import FakeUserRepository from '../../repositories/fakes/FakeUserRepository';
+import FakeHashProvider from '../../providers/HashProvider/fakes/FakeHashProvider';
+import FakeTokenProvider from '../../providers/TokenProvider/fakes/FakeTokenProvider';
 
-import CreateUserService from './CreateUserService';
-import SessionsService from './SessionService';
+import CreateUserService from '../CreateUserService';
+import SessionsService from '../SessionService';
 
 import AppError from '@shared/errors/AppError';
-import IUserRepository from '../repositories/IUserRepository';
-import IHashProvider from '../providers/HashProvider/models/IHashProvider';
-import ITokenProvider from '../providers/TokenProvider/models/ITokenProvider';
+import IUserRepository from '../../repositories/IUserRepository';
+import IHashProvider from '../../providers/HashProvider/models/IHashProvider';
+import ITokenProvider from '../../providers/TokenProvider/models/ITokenProvider';
 
 
 let userRepository: IUserRepository;
@@ -43,6 +43,7 @@ describe('SessionsService', () =>
    {
 
       await createUserService.run({
+         name: 'Gabriel',
          email: 'gabrielf.otto@hotmail.com',
          password: '223600'
       });
@@ -67,6 +68,7 @@ describe('SessionsService', () =>
    it('should not pass in password match validation', async () => 
    {
       await createUserService.run({
+         name: 'Gabriel',
          email: 'gabrielf.otto@hotmail.com',
          password: '223600'
       });

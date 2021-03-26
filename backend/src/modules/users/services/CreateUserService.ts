@@ -8,6 +8,7 @@ import AppError from '@shared/errors/AppError';
 
 
 interface IRequest {
+   name: string;
    email: string;
    password: string;
 }
@@ -24,7 +25,7 @@ class CreateUserService
    ) 
    {}
 
-   async run({ email, password }: IRequest): Promise<User> 
+   async run({ name, email, password }: IRequest): Promise<User> 
    {
       const user = await this.userRepository.findByEmail(email);
       if (user) 
@@ -35,6 +36,7 @@ class CreateUserService
       }
 
       return this.userRepository.store({ 
+         name,
          email, 
          password: await this.hashProvider.generate(password)
       });
