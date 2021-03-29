@@ -14,13 +14,17 @@ export default createGlobalStyle`
       border-radius: 3px;
    }
 
+   div.MuiInputBase-root.MuiFilledInput-root.MuiFilledInput-underline.MuiInputBase-formControl.MuiInputBase-multiline.MuiFilledInput-multiline {
+      padding: 15px;
+   }
+
    a {
       text-decoration: none;
       color: inherit;
    }
 
-   input.MuiFilledInput-input {
-      padding: 15px;
+   body {
+      padding-bottom: 100px;
    }
 
 `;

@@ -8,11 +8,9 @@ import {
    Typography
 } from '@material-ui/core';
 
-
 import { useHistory } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../../hooks/auth';
-
 
 
 const schema = '';

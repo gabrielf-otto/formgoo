@@ -7,17 +7,17 @@ import SignIn from '../pages/SignIn';
 
 import Dashboard from '../pages/Dashboard';
 import Form from '../pages/Form';
-
+import Resolution from '../pages/Resolution';
 
 
 const Routes: React.FC = () => (
    <Switch>
-      <Route path="/signin" component={SignIn}/>
-      {/* <Route path="/signup" component={SignUp}/> */}
+      <Route path="/signin" component={SignIn} />
+      {/* <Route path="/signup" component={SignUp} /> */}
 
-      <Route path="/" exact component={Dashboard} isPrivate/>
-      <Route path="/forms" component={Form} isPrivate/>
-      {/* <Route path="/forms/:id/resolutions" component={Form} isPrivate/> */}
+      <Route path="/" exact component={Dashboard} isPrivate />
+      <Route path="/forms/:id?" component={Form} isPrivate />
+      <Route path="/forms/:id/resolutions" component={Resolution} isPrivate />
    </Switch>
 );
 

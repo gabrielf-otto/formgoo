@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { parseISO, format } from 'date-fns';
 
@@ -23,7 +23,18 @@ import {
    TableCell,
    Chip,
    MenuItem,
-   Menu
+   Menu,
+   ListItemIcon,
+   ListItemText,
+
+   Dialog,
+   DialogTitle,
+   DialogContent,
+   DialogActions,
+   Button,
+   DialogContentText,
+   ButtonGroup,
+   Popover
 } from '@material-ui/core';
 
 import {
@@ -42,6 +53,7 @@ import { FormCard } from './styles';
 
 import api from '../../services/api';
 import { useAuth } from '../../hooks/auth';
+import { useQueryParams } from '../../hooks/queryParams';
 
 
 enum EViewMode {
@@ -56,6 +68,12 @@ interface IFormData {
    user_id: string;
    created_at: string;
    formattedDate: string;
+
+   actions: { 
+      menuAnchorRef: HTMLElement | null;
+      popoverAnchorRef: HTMLElement | null;
+      isConfirmDeleteDialogOpened: boolean;
+   }
 }
 
 const Dashboard: React.FC = () => {
@@ -72,13 +90,77 @@ const Dashboard: React.FC = () => {
             formattedDate: format(
                parseISO(form.created_at),
                '\'Criado em\' dd/MM/yyyy'
-            )
+            ),
+
+            actions: {
+               menuAnchorRef: null,
+               popoverAnchorRef: null,
+               isConfirmDeleteDialogOpened: false
+            }
          }));
 
          setForms(forms);
       });
    },
-      []);
+   []);
+
+   const openActionsMenu = useCallback((event, formRef) => 
+   {
+      const draft = forms;
+      draft[formRef].actions.menuAnchorRef = event.currentTarget;
+      setForms(draft);
+   },
+   [forms]);
+
+   const closeActionsMenu = useCallback(formRef => 
+   {
+      const draft = forms;
+      draft[formRef].actions.menuAnchorRef = null;
+      setForms(draft);
+   },
+   [forms]);
+
+   const openConfirmDeleteFormDialog = useCallback(formRef => 
+   {
+      const draft = forms;
+      draft[formRef].actions.menuAnchorRef = null;
+      draft[formRef].actions.isConfirmDeleteDialogOpened = true;
+      setForms(draft);
+   },
+   [forms]);
+
+   const closeConfirmDeleteFormDialog = useCallback(formRef => 
+   {
+      const draft = forms;
+      draft[formRef].actions.isConfirmDeleteDialogOpened = false;
+      setForms(draft);
+   },
+   [forms]);
+
+   const openConfirmDeleteFormPopover = useCallback((event, formRef) => 
+   {
+      const draft = forms;
+      draft[formRef].actions.popoverAnchorRef = event.currentTarget;
+      setForms(draft);
+   },
+   [forms]);
+
+   const closeConfirmDeleteFormPopover = useCallback(formRef => 
+   {
+      const draft = forms;
+      draft[formRef].actions.popoverAnchorRef = null;
+      setForms(draft);
+   },
+   [forms]);
+
+   const deleteForm = useCallback(formRef => 
+   {
+      const draft = forms;
+      draft.splice(formRef, 1);
+      setForms(draft);
+   },
+   [forms]);
+
 
    return (
       <React.Fragment>
@@ -114,9 +196,10 @@ const Dashboard: React.FC = () => {
                <Divider />
 
                <Box mt={2} px={2}>
-                  {viewMode === EViewMode.GRID ? (
+                  {viewMode === EViewMode.GRID? 
+                  (
                      <Grid container spacing={2}>
-                        {forms.map(form => (
+                        {forms.map((form, formRef) => (
                            <Grid item key={form.id} md={4} xs={12}>
                               <Link to="">
                                  <FormCard>
@@ -163,26 +246,67 @@ const Dashboard: React.FC = () => {
                                              </Typography>
                                           </Box>
 
-                                          <IconButton size="small">
+                                          <IconButton size="small" onClick={event => openActionsMenu(event, formRef)}>
                                              <MoreVert />
                                           </IconButton>
 
                                           <Menu
                                              keepMounted
-                                             open={false}
-                                             // anchorEl={anchorEl}
-                                             // open={Boolean(anchorEl)}
-                                             // onClose={handleClose}
+                                             anchorEl={form.actions.menuAnchorRef}
+                                             open={!!form.actions.menuAnchorRef}
+                                             onClose={() => closeActionsMenu(formRef)}
                                           >
-                                             <MenuItem>
-                                                Profile
+                                             <MenuItem onClick={() => closeActionsMenu(formRef)}>
+                                                <Link to="">
+                                                   <Box display="flex" alignItems="center">
+                                                      <ListItemIcon style={{ minWidth: 40 }}>
+                                                         <QuestionAnswer fontSize="small" />
+                                                      </ListItemIcon>
+                                                      <ListItemText primary="Resoluções" />
+                                                   </Box>
+                                                </Link>
                                              </MenuItem>
-                                             <MenuItem>
-                                                My account
+
+                                             <MenuItem onClick={() => closeActionsMenu(formRef)}>
+                                                <Link to="">
+                                                   <Box display="flex" alignItems="center">
+                                                      <ListItemIcon style={{ minWidth: 40 }}>
+                                                         <Edit fontSize="small" />
+                                                      </ListItemIcon>
+                                                      <ListItemText primary="Editar" />
+                                                   </Box>
+                                                </Link>
                                              </MenuItem>
-                                             <MenuItem>
-                                                Logout
+
+                                             <MenuItem onClick={() => openConfirmDeleteFormDialog(formRef)}>
+                                                <Box display="flex" alignItems="center">
+                                                   <ListItemIcon style={{ minWidth: 40 }}>
+                                                      <Delete fontSize="small" />
+                                                   </ListItemIcon>
+                                                   <ListItemText primary="Deletar" />
+                                                </Box>
                                              </MenuItem>
+
+                                             <Dialog
+                                                open={form.actions.isConfirmDeleteDialogOpened}
+                                                onClose={() => closeConfirmDeleteFormDialog(formRef)}
+                                             >
+                                                <DialogTitle>{form.title}</DialogTitle>
+                                                <DialogContent>
+                                                   <DialogContentText>
+                                                      Tem certeza que deseja deletar o formulário?
+                                                   </DialogContentText>
+                                                </DialogContent>
+
+                                                <DialogActions>
+                                                   <Button onClick={() => closeConfirmDeleteFormDialog(formRef)} color="primary">
+                                                      Cancelar
+                                                   </Button>
+                                                   <Button onClick={() => deleteForm(formRef)} color="secondary">
+                                                      Confirmar
+                                                   </Button>
+                                                </DialogActions>
+                                             </Dialog>
                                           </Menu>
                                        </Box>
                                     </CardContent>
@@ -195,7 +319,7 @@ const Dashboard: React.FC = () => {
                      <TableContainer>
                         <Table>
                            <TableBody>
-                              {forms.map(form => (
+                              {forms.map((form, formRef) => (
                                  <TableRow key={form.id}>
                                     <TableCell align="left">
                                        <img
@@ -204,14 +328,17 @@ const Dashboard: React.FC = () => {
                                           style={{ width: 26 }}
                                        />
                                     </TableCell>
+
                                     <TableCell align="left">
                                        <Link to="">
                                           <Chip label={form.title} clickable />
                                        </Link>
                                     </TableCell>
+
                                     <TableCell align="left">
                                        {form.formattedDate}
                                     </TableCell>
+
                                     <TableCell width={50}>
                                        <Tooltip title="Resoluções" placement="top">
                                           <IconButton size="small">
@@ -230,10 +357,40 @@ const Dashboard: React.FC = () => {
 
                                     <TableCell width={50}>
                                        <Tooltip title="Deletar" placement="top">
-                                          <IconButton size="small">
+                                          <IconButton size="small" onClick={event => openConfirmDeleteFormPopover(event, formRef)}>
                                              <Delete fontSize="small" />
                                           </IconButton>
                                        </Tooltip>
+
+                                       {/* <Popover
+                                          anchorEl={form.actions.popoverAnchorRef}   
+                                          open={!!form.actions.popoverAnchorRef}
+                                          onClose={() => closeConfirmDeleteFormPopover(formRef)}
+
+                                          anchorOrigin={{
+                                             vertical: 'top',
+                                             horizontal: 'center',
+                                          }}
+                                          transformOrigin={{
+                                             vertical: 'bottom',
+                                             horizontal: 'center',
+                                          }}
+                                       >
+                                          <Box display="flex" flexDirection="column">
+                                             <Typography>
+                                                Tem certeza que deseja deletar o formulário?
+                                             </Typography>
+
+                                             <Divider />
+
+                                             <ButtonGroup>
+                                                <Button color="primary" onClick={() => closeConfirmDeleteFormPopover(formRef)}>
+                                                   Cancelar
+                                                </Button>
+                                                <Button color="secondary" onClick={() => deleteForm(formRef)}>Confirmar</Button>
+                                             </ButtonGroup>
+                                          </Box>
+                                       </Popover> */}
                                     </TableCell>
                                  </TableRow>
                               ))}
@@ -253,7 +410,8 @@ const Dashboard: React.FC = () => {
                         right: 20,
                         bottom: 30,
                         marginRight: 16
-                     }}>
+                     }}
+                  >
                      <Add />
                   </Fab>
                </Tooltip>

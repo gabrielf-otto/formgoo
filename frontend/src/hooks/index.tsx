@@ -1,12 +1,15 @@
 import React from 'react';
 import { AuthProvider } from '../contexts/auth';
+import { QueryParamsProvider } from '../contexts/queryParams';
 
 
 const AppProvider: React.FC = ({ children }) => (
-   <AuthProvider>
-      {children}
-   </AuthProvider>
-)
+   <QueryParamsProvider>
+      <AuthProvider>
+         {children}
+      </AuthProvider>
+   </QueryParamsProvider>
+);
 
 
 export default AppProvider;

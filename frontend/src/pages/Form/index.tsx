@@ -1,5 +1,5 @@
-import React, { useCallback, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 
 import {
@@ -15,6 +15,7 @@ import {
    TextField,
    Input,
    FormControl,
+   Card,
    CardActions,
    Divider,
    IconButton,
@@ -22,7 +23,9 @@ import {
    MenuItem,
    Select,
    FormControlLabel,
-   Radio
+   Radio,
+   Checkbox,
+   Button
 } from '@material-ui/core';
 
 import {
@@ -31,6 +34,7 @@ import {
    CheckBox,
    ChevronLeft,
    Clear,
+   CloudUpload,
    Delete,
    FileCopy,
    FormatAlignLeft,
@@ -39,18 +43,29 @@ import {
 } from '@material-ui/icons';
 
 import Header from '../../components/Header';
-import QuestionCard from '../../components/QuestionCard';
 
 import { useStyles } from './styles';
 import { useAuth } from '../../hooks/auth';
+import api from '../../services/api';
 
+
+interface IParams {
+   id: string;
+}
 
 enum EQuestionTypes {
-   SA = 'short-answer', // Default
+   SA = 'short-answer',
    LA = 'long-answer',
    SC = 'single-choice',
    MC = 'multiple-choice',
    FU = 'file-upload'
+}
+
+interface IForm {
+   id?: string;
+   title: string;
+   description?: string;
+   questions: IQuestion[];
 }
 
 interface IQuestion {
@@ -63,8 +78,19 @@ interface IQuestion {
 
 const Form: React.FC = () => {
    const { user } = useAuth();
+   const { id: form_id } = useParams<IParams>();
+
    const { register, handleSubmit } = useForm();
    const classes = useStyles();
+
+   const [form, setForm] = useState<IForm | null>();
+
+   useEffect(() => {
+      api.get(`/forms/${form_id}`).then(response => {
+         setForm(response.data);
+      });
+   },
+   []);
 
    const [questions, setQuestions] = useState<IQuestion[]>([
    {
@@ -78,11 +104,17 @@ const Form: React.FC = () => {
    const [currentQuestion, setCurrentQuestion] = useState<IQuestion>(questions[0]);
 
 
+   const saveForm = useCallback(() => {
+      
+   },
+   [questions, form]);
+
+
    const updateQuestion = useCallback((question, ref) => 
    {
-      const updated = questions;
-      updated[ref] = question;
-      setQuestions(updated);
+      const draft = Array.from(questions);
+      draft[ref] = question;
+      setQuestions(draft);
    },
    [questions]);
 
@@ -102,7 +134,7 @@ const Form: React.FC = () => {
    },
    [questions]);
 
-   const duplicateQuestion = useCallback(event => {
+   const duplicateQuestion = useCallback(() => {
       setQuestions(
       [
          ...questions,
@@ -111,14 +143,16 @@ const Form: React.FC = () => {
    },
    [questions, currentQuestion]);
 
-   const removeQuestion = useCallback((event, questionRef) => {
+   const removeQuestion = useCallback(questionRef => {
       if (questions.length === 1) {
          return;
       }
 
-      const updated = questions;
-      updated.splice(questionRef, 1);
-      setQuestions(updated);
+      const draft = Array.from(questions);
+      draft.splice(questionRef, 1);
+
+      setQuestions(draft);
+      setCurrentQuestion(questions[0]);
    },
    [questions, currentQuestion]);
 
@@ -153,16 +187,9 @@ const Form: React.FC = () => {
    },
    [questions, currentQuestion]);
 
-   const changeCurrentQuestion = useCallback(event => {
-      const index = event.currentTarget.getAttribute('questionRef');
-      const question = questions[index];
-      setCurrentQuestion(question);
-   },
-   [questions, currentQuestion]);
-
-   const addQuestionOption = useCallback((event, questionRef) => 
+   const addQuestionOption = useCallback(questionRef => 
    {
-      const { options } = currentQuestion;
+      const options = Array.from(currentQuestion.options);
       const { length } = options;
 
       if (!options[length - 1]) {
@@ -183,7 +210,7 @@ const Form: React.FC = () => {
 
    const updateQuestionOption = useCallback((event, index, questionRef) => 
    {
-      const { options } = currentQuestion;
+      const options = Array.from(currentQuestion.options);
       options[index] = event.target.value;
 
       const question = {
@@ -194,11 +221,11 @@ const Form: React.FC = () => {
       setCurrentQuestion(question);
       updateQuestion(question, questionRef);
    },
-   [currentQuestion]);
+   [questions, currentQuestion]);
 
-   const removeQuestionOption = useCallback((event, index, questionRef) => 
+   const removeQuestionOption = useCallback((index, questionRef) => 
    {
-      const { options } = currentQuestion;
+      const options = Array.from(currentQuestion.options);
       options.splice(index, 1);
 
       const question = {
@@ -209,9 +236,9 @@ const Form: React.FC = () => {
       setCurrentQuestion(question);
       updateQuestion(question, questionRef);
    },
-   [currentQuestion]);
+   [questions, currentQuestion]);
 
-   const toggleQuestionRequired = useCallback((event, questionRef) => {
+   const toggleQuestionRequired = useCallback(questionRef => {
       const question = 
       {
          ...currentQuestion,
@@ -235,18 +262,24 @@ const Form: React.FC = () => {
                centered
                value={0}
             >
-               <Link to="/">
+               <Link to={form_id? `/forms/${form_id}`: '/forms/?teste=fodeu'}>
                   <Tab label="Perguntas" />
                </Link>
-               <Link to="/">
-                  <Tab label="Resoluções" />
-               </Link>
+
+               {form_id? (
+                  <Link to={`/forms/${form_id}/resolutions`}>
+                     <Tab label="Resoluções" />
+                  </Link>
+               ) : (
+                  <Tab label="Resoluções" disabled />
+               )}
+               
             </Tabs>
          </Box>
 
          <Container maxWidth="md">
             <Box mt={2} maxWidth={768} mx="auto">
-               <form autoComplete="off" onSubmit={() => { }}>
+               <form autoComplete="off" onSubmit={handleSubmit(saveForm)}>
                   <Paper>
                      <Box p={2}>
                         <FormControl fullWidth>
@@ -270,16 +303,14 @@ const Form: React.FC = () => {
 
                   {questions.map((question, questionRef) => (
                      <Box mt={2}>
-                        <QuestionCard onMouseEnter={changeCurrentQuestion} questionRef={questionRef}>
+                        <Card onMouseEnter={() => setCurrentQuestion(questions[questionRef])}>
                            <CardContent>
-                              <Box
-                                 display="flex"
-                                 alignItems="center"
-                              >
+                              <Box display="flex" alignItems="flex-start">
                                  <TextField
                                     name="content"
                                     placeholder="Pergunta"
                                     variant="filled"
+                                    multiline
                                     tabIndex={-1}
 
                                     onChange={event => updateQuestionContent(event, questionRef)}
@@ -305,35 +336,38 @@ const Form: React.FC = () => {
                                     classes={{ root: classes.root }}
                                  >
                                     <MenuItem value={EQuestionTypes.SA}>
-                                       <ShortText
-                                          fontSize="small"
-                                          style={{ marginRight: 10 }}
-                                       />
+                                       <ShortText fontSize="small" style={{ marginRight: 10 }} />
                                        Resposta curta
                                     </MenuItem>
                                     <MenuItem value={EQuestionTypes.LA}>
-                                       <FormatAlignLeft
-                                          fontSize="small"
-                                          style={{ marginRight: 10 }}
-                                       />
+                                       <FormatAlignLeft fontSize="small" style={{ marginRight: 10 }} />
                                        Parágrafo
                                     </MenuItem>
 
-                                    <Divider style={{ margin: '10px 0' }} />
+                                    <Divider 
+                                       style={{ 
+                                          margin: '10px 0' 
+                                       }} 
+                                    />
 
                                     <MenuItem value={EQuestionTypes.SC}>
-                                       <RadioButtonChecked
-                                          fontSize="small"
-                                          style={{ marginRight: 10 }}
-                                       />
+                                       <RadioButtonChecked fontSize="small" style={{ marginRight: 10 }} />
                                        Escolha única
                                     </MenuItem>
                                     <MenuItem value={EQuestionTypes.MC}>
-                                       <CheckBox
-                                          fontSize="small"
-                                          style={{ marginRight: 10 }}
-                                       />
+                                       <CheckBox fontSize="small" style={{ marginRight: 10 }} />
                                        Escolha múltipla
+                                    </MenuItem>
+
+                                    <Divider 
+                                       style={{ 
+                                          margin: '10px 0' 
+                                       }} 
+                                    />
+
+                                    <MenuItem value={EQuestionTypes.FU}>
+                                       <CloudUpload fontSize="small" style={{ marginRight: 10 }} />
+                                       Ficheiro
                                     </MenuItem>
                                  </Select>
                               </Box>
@@ -354,23 +388,18 @@ const Form: React.FC = () => {
                                  </Typography>
                               )}
 
-                              {question.type === EQuestionTypes.SC && 
+                              {(question.type === EQuestionTypes.SC ||
+                              question.type === EQuestionTypes.MC) && 
                               question.options.map((option, index) => 
                               ( 
-                                 <Box
-                                    key={index}
-                                    display="flex"
-                                    flexDirection="column"
-                                 >
-                                    <Box
-                                       display="flex"
-                                       alignItems="center"
-                                    >
+                                 <Box key={index} display="flex" flexDirection="column">
+                                    <Box display="flex" alignItems="center">
                                        <FormControlLabel
                                           label=""
                                           disabled
-                                          control={<Radio />}
+                                          control={question.type === EQuestionTypes.SC? (<Radio />): (<Checkbox />)}
                                        />
+                                       
                                        <Input
                                           fullWidth
                                           placeholder="Conteúdo"
@@ -384,7 +413,7 @@ const Form: React.FC = () => {
                                        {question.options.length > 1 && (
                                           <IconButton
                                              size="small"
-                                             onClick={event => removeQuestionOption(event, index, questionRef)}
+                                             onClick={() => removeQuestionOption(index, questionRef)}
                                           >
                                              <Clear />
                                           </IconButton>
@@ -394,10 +423,15 @@ const Form: React.FC = () => {
                                  </Box>
                               ))}
 
-                              {question.type === EQuestionTypes.SC && (
+                              {(question.type === EQuestionTypes.SC ||
+                              question.type === EQuestionTypes.MC) && 
+                              (
                                  <Box m={2} display="flex">
                                     <Box mx="auto">
-                                       <IconButton onClick={event => addQuestionOption(event, questionRef)}>
+                                       <IconButton 
+                                          onClick={() => addQuestionOption(questionRef)} 
+                                          disabled={!question.options[question.options.length - 1]}
+                                       >
                                           <AddCircle />
                                        </IconButton>
                                     </Box>
@@ -422,35 +456,52 @@ const Form: React.FC = () => {
                                  </Tooltip>
 
                                  <Tooltip title="Deletar">
-                                    <IconButton onClick={event => removeQuestion(event, questionRef)}>
+                                    <IconButton 
+                                       onClick={() => removeQuestion(questionRef)} 
+                                       disabled={questions.length === 1 || questionRef === 0}
+                                    >
                                        <Delete />
                                     </IconButton>
                                  </Tooltip>
 
-                                 <Divider orientation="vertical" flexItem />
+                                 <Divider 
+                                    orientation="vertical" 
+                                    flexItem 
+                                 />
 
-                                 <Box
-                                    ml={2}
-                                    display="flex"
-                                    alignItems="center"
-                                 >
+                                 <Box ml={2} display="flex" alignItems="center">
                                     <Typography>
                                        Obrigatório
                                     </Typography>
+
                                     <Switch
                                        name="required"
                                        color="primary"
                                        tabIndex={-1}
 
-                                       onChange={event => toggleQuestionRequired(event, questionRef)}
+                                       onChange={() => toggleQuestionRequired(questionRef)}
                                        checked={question.required}
                                     />
                                  </Box>
                               </Box>
                            </CardActions>
-                        </QuestionCard>
+                        </Card>
                      </Box>
                   ))}
+
+                  <Box mt={2} display="flex">
+                     <Button 
+                        onClick={addQuestion}
+                        style={{
+                           flexGrow: 1, 
+                           padding: 20, 
+                           color: '#666',
+                           border: '1px dashed #666',
+                        }}
+                     >
+                        <Add />
+                     </Button>
+                  </Box>
                </form>
             </Box>
          </Container>
