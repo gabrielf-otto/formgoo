@@ -37,6 +37,8 @@
 <h2>Pré-requisitos</h2>
 <p>Antes de começar, você vai precisar ter instalado em sua máquina as seguintes ferramentas: <a href="https://git-scm.com/downloads">Git</a>, <a href="https://nodejs.org/pt-br/download/">Node.js</a>, <a href="https://classic.yarnpkg.com/en/docs/install#windows-stable">Yarn</a> e <a href="https://www.docker.com/" target="_blank">Docker</a>. Além disso, é bom ter um editor para trabalhar com o código como o <a href="https://code.visualstudio.com/download">VSCode</a>.</p>
 
+<p>Pesquise como faz para instalar o Docker, caso você use o windows, para então poder criar o container do banco postgres e utilizar nesse projeto. Ou se preferir, você pode instalar o postgres com o instalador padrão pra windows, com next > next > next.</p>
+
 <h3>🎲 Rodando o Backend (servidor):</h3>
 <div>
    <pre>   
