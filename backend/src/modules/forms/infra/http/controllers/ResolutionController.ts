@@ -22,6 +22,21 @@ class ResolutionController {
       return response.json(resolutions);
    }
 
+   static async show(request: Request, response: Response) 
+   {
+      const { resolution_id } = request.params;
+      const user_id = request.user.id;
+
+      const showResolution = container.resolve(ShowResolutionService);
+      const resolution = await showResolution.run(
+      {
+         resolution_id,
+         user_id
+      });
+
+      return response.json(resolution);
+   }
+
    static async store(request: Request, response: Response) 
    {
       const {
@@ -37,21 +52,6 @@ class ResolutionController {
          answers,
          from,
          form_id
-      });
-
-      return response.json(resolution);
-   }
-
-   static async show(request: Request, response: Response) 
-   {
-      const { resolution_id } = request.params;
-      const user_id = request.user.id;
-
-      const showResolution = container.resolve(ShowResolutionService);
-      const resolution = await showResolution.run(
-      {
-         resolution_id,
-         user_id
       });
 
       return response.json(resolution);

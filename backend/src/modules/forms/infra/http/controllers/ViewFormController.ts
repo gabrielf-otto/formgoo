@@ -10,7 +10,7 @@ class ViewFormController {
       const { form_id } = request.params;
 
       const viewForm = container.resolve(ViewFormService);
-      const form = viewForm.run({
+      const form = await viewForm.run({
          form_id
       });
 

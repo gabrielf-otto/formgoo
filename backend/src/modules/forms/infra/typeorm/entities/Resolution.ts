@@ -43,11 +43,6 @@ class Resolution
    @ManyToOne(() => Form)
    @JoinColumn({ name: 'form_id' })
    form: Form;
-
-   @ManyToOne(() => User)
-   @JoinColumn({ name: 'user_id' })
-   user: User;
-   
 }
 
 

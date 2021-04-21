@@ -33,8 +33,8 @@ export const AuthContext = createContext<IAuthContext>({} as IAuthContext);
 export const AuthProvider: React.FC = ({ children }) => {
    const [data, setData] = useState<IAuth>(() => 
    {
-      const user = localStorage.getItem('@formspy:user');
-      const token = localStorage.getItem('@formspy:token');
+      const user = localStorage.getItem('@formgoo:user');
+      const token = localStorage.getItem('@formgoo:token');
 
       if (user && token) 
       {
@@ -57,8 +57,8 @@ export const AuthProvider: React.FC = ({ children }) => {
 
       const { user, token } = response.data;
 
-      localStorage.setItem('@formspy:user', JSON.stringify(user));
-      localStorage.setItem('@formspy:token', token);
+      localStorage.setItem('@formgoo:user', JSON.stringify(user));
+      localStorage.setItem('@formgoo:token', token);
 
       api.defaults.headers.authorization = `Bearer ${token}`;
       setData({ user, token });
@@ -67,8 +67,8 @@ export const AuthProvider: React.FC = ({ children }) => {
 
    const signOut = useCallback(() => 
    {
-      localStorage.removeItem('@formspy:user');
-      localStorage.removeItem('@formspy:token');
+      localStorage.removeItem('@formgoo:user');
+      localStorage.removeItem('@formgoo:token');
 
       setData({} as IAuth);
    },
@@ -76,7 +76,7 @@ export const AuthProvider: React.FC = ({ children }) => {
 
    const updateUser = useCallback((user: IUser) => 
    {
-      localStorage.setItem('@formspy:user', JSON.stringify(user));
+      localStorage.setItem('@formgoo:user', JSON.stringify(user));
       setData({
          token: data.token,
          user: {...user}

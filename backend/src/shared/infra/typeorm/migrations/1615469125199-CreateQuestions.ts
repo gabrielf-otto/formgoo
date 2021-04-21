@@ -26,7 +26,7 @@ export class CreateQuestions1615721832914 implements MigrationInterface {
 					{
 						name: 'options',
 						type: 'jsonb',
-						isNullable: true
+						default: []
 					},
 					{
 						name: 'position',

@@ -25,7 +25,7 @@ class Question
    @Column()
    content: string;
 
-   @Column('jsonb', { nullable: true })
+   @Column('jsonb', { default: [] })
    options: string[];
 
    @Column('int')

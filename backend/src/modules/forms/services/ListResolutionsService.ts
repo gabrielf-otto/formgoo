@@ -23,7 +23,7 @@ class ListResolutionsService
       @inject('FormRepository')
       private formRepository: IFormRepository,
 
-      @inject('ResolutionProvider')
+      @inject('ResolutionRepository')
       private resolutionRepository: IResolutionRepository
    )
    {}

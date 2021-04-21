@@ -1,11 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
 
 import {
    Container,
    Box,
-   Paper,
    Tooltip,
    Fab,
    CardContent,
@@ -39,6 +37,7 @@ import {
    FileCopy,
    FormatAlignLeft,
    RadioButtonChecked,
+   Save,
    ShortText
 } from '@material-ui/icons';
 
@@ -48,10 +47,6 @@ import { useStyles } from './styles';
 import { useAuth } from '../../hooks/auth';
 import api from '../../services/api';
 
-
-interface IParams {
-   id: string;
-}
 
 enum EQuestionTypes {
    SA = 'short-answer',
@@ -69,6 +64,7 @@ interface IForm {
 }
 
 interface IQuestion {
+   id?: string;
    type: string;
    content: string;
    options: string[];
@@ -76,39 +72,81 @@ interface IQuestion {
    required: boolean;
 }
 
+interface IParams {
+   id: string;
+}
+
 const Form: React.FC = () => {
    const { user } = useAuth();
    const { id: form_id } = useParams<IParams>();
 
-   const { register, handleSubmit } = useForm();
    const classes = useStyles();
 
-   const [form, setForm] = useState<IForm | null>();
+   const [form, setForm] = useState<IForm>({} as IForm);
+   const [questions, setQuestions] = useState<IQuestion[]>([{} as IQuestion]);
+   const [currentQuestion, setCurrentQuestion] = useState<IQuestion>({} as IQuestion);
 
    useEffect(() => {
-      api.get(`/forms/${form_id}`).then(response => {
-         setForm(response.data);
-      });
+      if (form_id) {
+         (async () => {
+            const { data: form } = await api.get<IForm>(
+               `/forms/${form_id}`
+            );
+            setForm(form);
+            setQuestions(form.questions);
+         })
+         ();
+      }
    },
-   []);
-
-   const [questions, setQuestions] = useState<IQuestion[]>([
-   {
-      type: EQuestionTypes.SA,
-      content: '',
-      options: [],
-      position: 1,
-      required: false
-   }]);
-
-   const [currentQuestion, setCurrentQuestion] = useState<IQuestion>(questions[0]);
+   [form_id]);
 
 
    const saveForm = useCallback(() => {
-      
+      const { title, description } = form;
+
+      if (form_id && form.id) 
+      {
+         api.put(`/forms/${form_id}`, {
+            title,
+            description,
+            questions
+         })
+         .then(() => {
+            
+         });
+      }
+      else {
+         api.post(`/forms/${form_id}`, {
+            title,
+            description,
+            questions
+         })
+         .then(() => {
+
+         });
+      }
    },
    [questions, form]);
 
+   const updateFormTitle = useCallback(event => {
+      const draft = {
+         ...form,
+         title: event.target.value
+      };
+
+      setForm(draft);
+   },
+   [form]);
+
+   const updateFormDescription = useCallback(event => {
+      const draft = {
+         ...form,
+         description: event.target.value
+      };
+
+      setForm(draft);
+   },
+   [form]);
 
    const updateQuestion = useCallback((question, ref) => 
    {
@@ -119,17 +157,9 @@ const Form: React.FC = () => {
    [questions]);
 
    const addQuestion = useCallback(() => {
-      const question = {
-         type: EQuestionTypes.SA,
-         content: '',
-         options: [],
-         position: 0,
-         required: false
-      }
-
       setQuestions([
          ...questions,
-         question
+         {} as IQuestion
       ]);
    },
    [questions]);
@@ -164,7 +194,7 @@ const Form: React.FC = () => {
       };
 
       setCurrentQuestion(question);
-      updateQuestion(question, questionRef)
+      updateQuestion(question, questionRef);
    },
    [currentQuestion, questions]);
 
@@ -262,11 +292,11 @@ const Form: React.FC = () => {
                centered
                value={0}
             >
-               <Link to={form_id? `/forms/${form_id}`: '/forms/?teste=fodeu'}>
+               <Link to={form_id? `/forms/${form_id}`: '/forms'}>
                   <Tab label="Perguntas" />
                </Link>
 
-               {form_id? (
+               {form_id && form.id? (
                   <Link to={`/forms/${form_id}/resolutions`}>
                      <Tab label="Resoluções" />
                   </Link>
@@ -279,15 +309,15 @@ const Form: React.FC = () => {
 
          <Container maxWidth="md">
             <Box mt={2} maxWidth={768} mx="auto">
-               <form autoComplete="off" onSubmit={handleSubmit(saveForm)}>
-                  <Paper>
+               <form autoComplete="off">
+                  <Card>
                      <Box p={2}>
                         <FormControl fullWidth>
                            <Input
                               name="title"
                               placeholder="Título"
-                              defaultValue="Formulário sem título"
-                              inputRef={register}
+                              value={form.title?? 'Formulário sem título'}
+                              onChange={event => updateFormTitle(event)}
                               style={{ fontSize: 32 }}
                            />
                         </FormControl>
@@ -295,11 +325,12 @@ const Form: React.FC = () => {
                            <Input
                               name="description"
                               placeholder="Descrição"
-                              inputRef={register}
+                              value={form.description?? ''}
+                              onChange={event => updateFormDescription(event)}
                            />
                         </FormControl>
                      </Box>
-                  </Paper>
+                  </Card>
 
                   {questions.map((question, questionRef) => (
                      <Box mt={2}>
@@ -332,13 +363,14 @@ const Form: React.FC = () => {
 
                                     onChange={event => setQuestionType(event, questionRef)}
                                     defaultValue={EQuestionTypes.SA}
-                                    value={question.type}
+                                    value={question.type?? EQuestionTypes.SA}
                                     classes={{ root: classes.root }}
                                  >
                                     <MenuItem value={EQuestionTypes.SA}>
                                        <ShortText fontSize="small" style={{ marginRight: 10 }} />
                                        Resposta curta
                                     </MenuItem>
+
                                     <MenuItem value={EQuestionTypes.LA}>
                                        <FormatAlignLeft fontSize="small" style={{ marginRight: 10 }} />
                                        Parágrafo
@@ -354,6 +386,7 @@ const Form: React.FC = () => {
                                        <RadioButtonChecked fontSize="small" style={{ marginRight: 10 }} />
                                        Escolha única
                                     </MenuItem>
+                                    
                                     <MenuItem value={EQuestionTypes.MC}>
                                        <CheckBox fontSize="small" style={{ marginRight: 10 }} />
                                        Escolha múltipla
@@ -458,7 +491,7 @@ const Form: React.FC = () => {
                                  <Tooltip title="Deletar">
                                     <IconButton 
                                        onClick={() => removeQuestion(questionRef)} 
-                                       disabled={questions.length === 1 || questionRef === 0}
+                                       disabled={questions.length === 1 && questionRef === 0}
                                     >
                                        <Delete />
                                     </IconButton>
@@ -480,7 +513,7 @@ const Form: React.FC = () => {
                                        tabIndex={-1}
 
                                        onChange={() => toggleQuestionRequired(questionRef)}
-                                       checked={question.required}
+                                       checked={!!question.required}
                                     />
                                  </Box>
                               </Box>
@@ -512,14 +545,26 @@ const Form: React.FC = () => {
                   color="primary"
                   style={{
                      position: 'fixed',
-                     left: 20,
-                     bottom: 30,
-                     marginRight: 16
+                     left: 40,
+                     bottom: 40
                   }}>
                   <ChevronLeft />
                </Fab>
             </Tooltip>
          </Link>
+
+         <Tooltip title="Salvar" placement="top">
+            <Fab
+               onClick={saveForm}
+               color="primary"
+               style={{
+                  position: 'fixed',
+                  right: 40,
+                  bottom: 40
+               }}>
+               <Save />
+            </Fab>
+         </Tooltip>
       </React.Fragment>
    );
 };

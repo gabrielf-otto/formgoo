@@ -37,7 +37,7 @@ class Answer
    updated_at: Date;
 
 
-   @ManyToOne(() => Question)
+   @ManyToOne(() => Question, { eager: true })
    @JoinColumn({ name: 'question_id' })
    question: Question;
 
