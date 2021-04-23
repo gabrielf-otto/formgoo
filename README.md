@@ -17,7 +17,7 @@
 <h2>⚙️ Funcionalidades</h2>
 <ul>
    <li>Cadastro de usuários</li>
-   <li>Login e logout</li>
+   <li>Autenticação</li>
    <li>Listagem de formulários</li>
    <li>Criação de formulários personalizados</li>
    <li>Responder formulários</li>
